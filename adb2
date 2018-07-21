@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# This is a wrapper for adb.  If there are multiple devices / emulators, this script will prompt for which device to use
+# Then it'll pass whatever commands to that specific device or emulator.
+
+# Run adb devices once, in event adb hasn't been started yet
+
+if [ "-s" == "$1" -o "devices" == "$1" ];then 
+	adb $@
+	exit $?
+fi
+
+BLAH=$(adb devices)
+
+# Grab the IDs of all the connected devices / emulators
+IDS=($(adb devices | sed '1,1d' | sed '$d' | cut -f 1 | sort -u))
+echo "$IDS"
+NUMIDS=${#IDS[@]}
+
+# Check for number of connected devices / emulators
+if [[ 0 -eq "$NUMIDS" ]]; then
+	# No IDs, exit
+	echo "No emulators or devices detected - nothing to do."
+	exit 0;
+elif [[ 1 -eq "$NUMIDS" ]]; then
+	# Just one device / emulator
+	adb $@
+	exit 0;
+fi
+
+# If we got here, there are multiple devices, need to get information then prompt user for which device/emulator to uninstall from
+
+# Grab the model name for each device / emulator
+declare -a MODEL_NAMES
+for (( x=0; x < $NUMIDS; x++ )); do
+	MODEL_NAMES[x]=$(adb -s ${IDS[$x]} shell getprop ro.product.model)
+	# echo "model:${MODEL_NAMES[$x]}"
+done
+
+# Grab the platform version for each device / emulator
+declare -a PLATFORM_VERSIONS
+for (( x=0; x < $NUMIDS; x++ )); do
+	PLATFORM_VERSIONS[x]=$(adb -s ${IDS[$x]} shell getprop "ro.build.version.release")
+done
+
+echo "$NUMIDS devices detected, please select one"
+for (( x=0; x < $NUMIDS; x++ )); do
+	echo -e "$[x+1]: ${IDS[x]}\t${PLATFORM_VERSIONS[x]}\t${MODEL_NAMES[x]}"
+done
+echo -n "> "
+read USER_CHOICE
+
+# Validate user entered a number
+if [[ $USER_CHOICE =~ ^[0-9]+$ ]]; then
+	echo "executing following command:"
+	echo "    adb -s ${IDS[$USER_CHOICE-1]} $@"
+	adb -s ${IDS[$USER_CHOICE-1]} $@
+else
+	echo "You must enter a number"
+fi
