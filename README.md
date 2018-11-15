@@ -2,7 +2,8 @@
 开发的时候经常会需要插入多个手机,有时候忘记了,执行adb命令时就会报错,说 插入了多个设备,必须手动加 -s 参数选择设备.
 我在github上找了一个adb2脚本,用来替换adb命令,但我发现里面有些问题,所以将其做了一些修改.
 # 简介
-adb wrapper to support multiple devices.封装了ada命令,用来支持多个设备.
+adb wrapper to support multiple devices.
+封装了adb命令,用来支持多个设备.
 # 使用环境
 适用于:Linux系统
 # 使用方法
