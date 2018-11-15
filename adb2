@@ -5,7 +5,8 @@
 
 # Run adb devices once, in event adb hasn't been started yet
 
-if [ "-s" == "$1" -o "devices" == "$1" ];then 
+if [ "-s" == "$1" -o "devices" == "$1" ];
+then 
 	adb $@
 	exit $?
 fi
@@ -13,8 +14,8 @@ fi
 BLAH=$(adb devices)
 
 # Grab the IDs of all the connected devices / emulators
-IDS=($(adb devices | sed '1,1d' | sed '$d' | cut -f 1 | sort -u))
-echo "$IDS"
+IDS=($(adb devices | sed '1,1d' | sed '$d' |sed -e '/no permissions/d' | cut -f 1 | sort -u))
+# echo "IDS:$IDS"
 NUMIDS=${#IDS[@]}
 
 # Check for number of connected devices / emulators
